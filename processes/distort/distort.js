@@ -3,9 +3,9 @@ var Distort = function(files, channels) {
 
 	this.files = files;
 	this.channels = channels;
-	
+
 	this.process = function() {
-		
+
 		console.log(' PROCESS - DISTORT ');
 
 		var distorta = '_average',
@@ -17,7 +17,7 @@ var Distort = function(files, channels) {
 			distortg = '_replim',
 			distorth = '_replace',
 		 	self = this;
-		
+
 		this.files.forEach(function(file) {
 
 			for (var i = 1; i <= channels; i++) {
@@ -29,7 +29,7 @@ var Distort = function(files, channels) {
 				self.run('distort omit ' + self.params(file, distortf, i) + self.ws + self.rrange(2, 5) + self.ws + self.rrange(6, 8));
 				self.run('distort replim ' + self.params(file, distortg, i) + self.ws + self.rrange(2, 10) + ' -c30 -s0 -f2000');
 				self.run('distort replace ' + self.params(file, distorth, i) + self.ws + self.rrange(2, 12));
-				  
+
 			}
 
 			self.collect(file, distorta);

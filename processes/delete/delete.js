@@ -3,10 +3,10 @@ var Delete = function(files, channels) {
 
 	this.files = files;
 	this.channels = channels;
-	
+
 	this.process = function() {
-		
-		console.log(' PROCESS - DELVERB ');
+
+		console.log(' PROCESS - DELETE ');
 
 		var deletea = '_deletea',
 			deleteb = '_deleteb',
@@ -16,9 +16,9 @@ var Delete = function(files, channels) {
 			deletef = '_deletef',
 			deleteg = '_deleteg',
 			deleteh = '_deleteh',
-		 	
+
 		 	self = this;
-		
+
 		this.files.forEach(function(file) {
 
 			for (var i = 1; i <= channels; i++) {
@@ -30,7 +30,7 @@ var Delete = function(files, channels) {
 				self.run('distort delete 3 ' + self.params(file, deletef, i) + ' processes/delete/brk/tremf.txt');
 				self.run('distort delete 2 ' + self.params(file, deleteg, i) + ' processes/delete/brk/tremg.txt');
 				self.run('distort delete 1 ' + self.params(file, deleteh, i) + ' processes/delete/brk/tremh.txt');
-				
+
 			}
 
 			self.collect(file, deletea);
