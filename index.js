@@ -21,6 +21,8 @@ const Delverb = require('./processes/delverb/delverb');
 const Transpose = require('./processes/transpose/transpose');
 const Speca = require('./processes/speca/speca');
 const Pitchspec = require('./processes/pitchspec/pitchspec.js');
+const DistortExtended = require('./processes/experimental/distort_extended');
+const Distmore = require('./processes/experimental/distmore');
 
 class Transform {
 	constructor(channels) {
@@ -31,12 +33,70 @@ class Transform {
 		this.ws = ' ';
 		this.c = '_c';
 		this.outputFolder = 'transformed/';
+		// Store project root directory (where index.js is located)
+		this.projectRoot = __dirname;
 	}
 
 	init() {
+		const currentDir = process.cwd();
+		let maxChannelsFound = 0;
+		
 		this.files.forEach((file) => {
-			this.run(`housekeep chans 2 ${file}${this.wav}`);
+			const inputFile = `${file}${this.wav}`;
+			
+			if (this.channels > 1) {
+				// Try to extract channels (works for multi-channel files)
+				this.run(`housekeep chans 2 ${inputFile}`);
+				
+				// Check if we got the expected number of channel files
+				// If the file is mono, only _c1.wav will be created
+				const lastChannelFile = path.join(currentDir, `${file}${this.c}${this.channels}${this.wav}`);
+				
+				// Since execSync is synchronous, check immediately after command completes
+				if (!fs.existsSync(lastChannelFile)) {
+					// File is mono, convert to stereo first, then split
+					const stereoFile = `${file}_stereo${this.wav}`;
+					this.run(`housekeep chans 5 ${inputFile} ${stereoFile}`);
+					// Now split the stereo file - this creates stereoFile_c1.wav and stereoFile_c2.wav
+					this.run(`housekeep chans 2 ${stereoFile}`);
+					
+					// Rename the channel files to match expected naming (remove _stereo from name)
+					for (let i = 1; i <= this.channels; i++) {
+						const oldName = path.join(currentDir, `${file}_stereo${this.c}${i}${this.wav}`);
+						const newName = path.join(currentDir, `${file}${this.c}${i}${this.wav}`);
+						if (fs.existsSync(oldName)) {
+							this.run(`mv "${oldName}" "${newName}"`);
+						}
+					}
+					
+					// Remove the temporary stereo file
+					this.run(`rm ${stereoFile}`);
+				}
+				
+				// Count how many channel files actually exist for this file
+				let actualChannels = 0;
+				for (let i = 1; i <= this.channels; i++) {
+					const channelFile = path.join(currentDir, `${file}${this.c}${i}${this.wav}`);
+					if (fs.existsSync(channelFile)) {
+						actualChannels = i;
+					} else {
+						break;
+					}
+				}
+				
+				// Track the maximum number of channels found across all files
+				if (actualChannels > maxChannelsFound) {
+					maxChannelsFound = actualChannels;
+				}
+			}
 		});
+		
+		// Update channels to match the actual number of channels available
+		// This prevents errors when requesting more channels than the file has
+		if (maxChannelsFound > 0 && maxChannelsFound < this.channels) {
+			console.log(`Warning: Requested ${this.channels} channels but only ${maxChannelsFound} channels found. Processing ${maxChannelsFound} channels.`);
+			this.channels = maxChannelsFound;
+		}
 	}
 
 	cleanFiles() {
@@ -46,14 +106,29 @@ class Transform {
 	}
 
 	run(args) {
-		console.log(args);
+		// Resolve paths that start with "processes/" to absolute paths relative to project root
+		// This allows processes to work from any directory
+		let resolvedArgs = args;
+		if (this.projectRoot) {
+			// Replace relative paths starting with "processes/" with absolute paths
+			// Match "processes/" followed by non-whitespace characters (handles paths with spaces in quotes)
+			resolvedArgs = args.replace(/\bprocesses\/[^\s]+/g, (match) => {
+				// Remove quotes if present, resolve path, then add quotes back if needed
+				const hasQuotes = (match.startsWith('"') || match.startsWith("'"));
+				const cleanMatch = hasQuotes ? match.slice(1, -1) : match;
+				const resolved = path.join(this.projectRoot, cleanMatch);
+				return hasQuotes ? `"${resolved}"` : resolved;
+			});
+		}
+		
+		console.log(resolvedArgs);
 		try {
-			const output = execSync(args, { encoding: 'utf8', stdio: 'pipe' });
+			const output = execSync(resolvedArgs, { encoding: 'utf8', stdio: 'pipe' });
 			if (output && output.trim().length > 0) {
 				console.log(output);
 			}
 		} catch (error) {
-			console.error(`Error executing: ${args}`);
+			console.error(`Error executing: ${resolvedArgs}`);
 			if (error.stdout) console.log(error.stdout);
 			if (error.stderr) console.error(error.stderr);
 		}
@@ -147,15 +222,30 @@ class Transform {
 	}
 
 	readFiles() {
-		const files = fs.readdirSync(__dirname);
+		// Use process.cwd() to read files from the current working directory
+		// This allows the command to work from any directory
+		const currentDir = process.cwd();
+		const files = fs.readdirSync(currentDir);
 
 		console.log(JSON.stringify(files));
 
 		this.files = [];
 
 		for (const file of files) {
-			if (path.extname(file) === this.wav && path.basename(file).slice(0, 2) !== '._') {
-				this.files.push(path.basename(file, this.wav));
+			// Only process .wav files
+			if (path.extname(file) !== this.wav) {
+				continue;
+			}
+			
+			const basename = path.basename(file, this.wav);
+			
+			// Filter out system files, invalid names, and files that are just underscores or dots
+			if (basename.length > 0 
+				&& basename.slice(0, 2) !== '._' 
+				&& basename !== '_' 
+				&& !basename.match(/^\.+$/)
+				&& !basename.match(/^_+$/)) {
+				this.files.push(basename);
 			}
 		}
 	}
@@ -170,34 +260,15 @@ console.log(`Number of channels : ${inputChannels}`);
 // Initialize transform instance
 const transform = new Transform(inputChannels);
 
-// Set up process prototypes
-Extend.prototype = Object.create(Transform.prototype);
-Cycles.prototype = Object.create(Transform.prototype);
-Chords.prototype = Object.create(Transform.prototype);
-Multi.prototype = Object.create(Transform.prototype);
-Filter.prototype = Object.create(Transform.prototype);
-Envel.prototype = Object.create(Transform.prototype);
-Distort.prototype = Object.create(Transform.prototype);
-Fade.prototype = Object.create(Transform.prototype);
-Granulate.prototype = Object.create(Transform.prototype);
-Radical.prototype = Object.create(Transform.prototype);
-Delete.prototype = Object.create(Transform.prototype);
-ZigZag.prototype = Object.create(Transform.prototype);
-Tremolo.prototype = Object.create(Transform.prototype);
-Delverb.prototype = Object.create(Transform.prototype);
-Transpose.prototype = Object.create(Transform.prototype);
-Speca.prototype = Object.create(Transform.prototype);
-Pitchspec.prototype = Object.create(Transform.prototype);
-
-// Initialize transform methods on all process prototypes
+// Set up process prototypes - ensure they inherit from Transform
 const processClasses = [
 	Extend, Cycles, Chords, Multi, Filter, Envel, Distort, Fade,
-	Granulate, Radical, Delete, ZigZag, Tremolo, Delverb, Transpose, Speca, Pitchspec
+	Granulate, Radical, Delete, ZigZag, Tremolo, Delverb, Transpose, Speca, Pitchspec,
+	DistortExtended, Distmore
 ];
 
 processClasses.forEach((ProcessClass) => {
-	const instance = new ProcessClass([], inputChannels);
-	Object.setPrototypeOf(instance, Transform.prototype);
+	// Set prototype to Transform.prototype
 	Object.setPrototypeOf(ProcessClass.prototype, Transform.prototype);
 });
 
@@ -207,110 +278,135 @@ transform.init();
 console.log('## CDP processing begins, processing:');
 console.log(JSON.stringify(transform.files));
 
+// Helper function to initialize process instance with Transform properties
+function initializeProcess(instance, channels) {
+	instance.channels = channels;
+	instance.wav = '.wav';
+	instance.ana = '.ana';
+	instance.ws = ' ';
+	instance.c = '_c';
+	instance.outputFolder = 'transformed/';
+	// Set project root so processes can resolve resource file paths
+	instance.projectRoot = __dirname;
+	return instance;
+}
+
 // Process command line arguments
 for (let i = 3; i < process.argv.length; i++) {
 	const processName = process.argv[i];
 
 	switch (processName) {
 		case 'cycles': {
-			const cycles = new Cycles(transform.files, inputChannels);
+			const cycles = initializeProcess(new Cycles(transform.files, inputChannels), inputChannels);
 			cycles.process();
 			break;
 		}
 
 		case 'extend': {
-			const extend = new Extend(transform.files, inputChannels);
+			const extend = initializeProcess(new Extend(transform.files, inputChannels), inputChannels);
 			extend.process();
 			break;
 		}
 
 		case 'chords': {
-			const chords = new Chords(transform.files, inputChannels);
+			const chords = initializeProcess(new Chords(transform.files, inputChannels), inputChannels);
 			chords.process();
 			break;
 		}
 
 		case 'multi': {
-			const multi = new Multi(transform.files, inputChannels);
+			const multi = initializeProcess(new Multi(transform.files, inputChannels), inputChannels);
 			multi.process();
 			break;
 		}
 
 		case 'filter': {
-			const filter = new Filter(transform.files, inputChannels);
+			const filter = initializeProcess(new Filter(transform.files, inputChannels), inputChannels);
 			filter.process();
 			break;
 		}
 
 		case 'envel': {
-			const envel = new Envel(transform.files, inputChannels);
+			const envel = initializeProcess(new Envel(transform.files, inputChannels), inputChannels);
 			envel.process();
 			break;
 		}
 
 		case 'distort': {
-			const distort = new Distort(transform.files, inputChannels);
+			const distort = initializeProcess(new Distort(transform.files, inputChannels), inputChannels);
 			distort.process();
 			break;
 		}
 
 		case 'fade': {
-			const fade = new Fade(transform.files, inputChannels);
+			const fade = initializeProcess(new Fade(transform.files, inputChannels), inputChannels);
 			fade.process();
 			break;
 		}
 
 		case 'granulate': {
-			const granulate = new Granulate(transform.files, inputChannels);
+			const granulate = initializeProcess(new Granulate(transform.files, inputChannels), inputChannels);
 			granulate.process();
 			break;
 		}
 
 		case 'radical': {
-			const radical = new Radical(transform.files, inputChannels);
+			const radical = initializeProcess(new Radical(transform.files, inputChannels), inputChannels);
 			radical.process();
 			break;
 		}
 
 		case 'delete': {
-			const del = new Delete(transform.files, inputChannels);
+			const del = initializeProcess(new Delete(transform.files, inputChannels), inputChannels);
 			del.process();
 			break;
 		}
 
 		case 'tremolo': {
-			const tremolo = new Tremolo(transform.files, inputChannels);
+			const tremolo = initializeProcess(new Tremolo(transform.files, inputChannels), inputChannels);
 			tremolo.process();
 			break;
 		}
 
 		case 'zigzag': {
-			const zigzag = new ZigZag(transform.files, inputChannels);
+			const zigzag = initializeProcess(new ZigZag(transform.files, inputChannels), inputChannels);
 			zigzag.process();
 			break;
 		}
 
 		case 'delverb': {
-			const delverb = new Delverb(transform.files, inputChannels);
+			const delverb = initializeProcess(new Delverb(transform.files, inputChannels), inputChannels);
 			delverb.process();
 			break;
 		}
 
 		case 'transpose': {
-			const transpose = new Transpose(transform.files, inputChannels);
+			const transpose = initializeProcess(new Transpose(transform.files, inputChannels), inputChannels);
 			transpose.process();
 			break;
 		}
 
 		case 'speca': {
-			const speca = new Speca(transform.files, inputChannels);
+			const speca = initializeProcess(new Speca(transform.files, inputChannels), inputChannels);
 			speca.process();
 			break;
 		}
 
 		case 'pitchspec': {
-			const pitchspec = new Pitchspec(transform.files, inputChannels);
+			const pitchspec = initializeProcess(new Pitchspec(transform.files, inputChannels), inputChannels);
 			pitchspec.process();
+			break;
+		}
+
+		case 'distort_extended': {
+			const distortExtended = initializeProcess(new DistortExtended(transform.files, inputChannels), inputChannels);
+			distortExtended.process();
+			break;
+		}
+
+		case 'distmore': {
+			const distmore = initializeProcess(new Distmore(transform.files, inputChannels), inputChannels);
+			distmore.process();
 			break;
 		}
 

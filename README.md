@@ -2,6 +2,8 @@
 
 A modern Node.js command-line tool for batch processing audio files using CDP (Composer's Desktop Project) transformations. This tool allows you to apply various audio effects and transformations to multiple WAV files simultaneously from the terminal.
 
+> **Quick Start**: See [QUICKSTART.md](QUICKSTART.md) for a fast setup guide!
+
 ## Features
 
 - **Batch Processing**: Process multiple audio files at once
@@ -16,9 +18,14 @@ A modern Node.js command-line tool for batch processing audio files using CDP (C
 
 - **Node.js**: Version 14.0.0 or higher
 - **CDP (Composer's Desktop Project)**: Must be installed and accessible from command line
-- **WAV Audio Files**: Place your `.wav` files in the project directory
+  - CDP commands (`housekeep`, `distort`, `submix`, etc.) must be in your system PATH
+  - Test by running: `which housekeep` or `housekeep --help` (should not return "command not found")
+  - If CDP is not in PATH, you may need to add the CDP installation directory to your PATH environment variable
+- **WAV Audio Files**: Place your `.wav` files in the directory where you run the command
 
 ## Installation
+
+### Local Development
 
 1. Clone the repository:
 ```bash
@@ -26,12 +33,38 @@ git clone https://github.com/bjarnig/CDP.js.git
 cd CDP.js
 ```
 
-2. Install globally to use the `cdpjs` command:
+2. Install globally to use the `cdpjs` command from anywhere:
 ```bash
 npm link
 ```
 
+### Global Installation
+
+To install globally from npm (when published):
+```bash
+npm install -g cdp.js
+```
+
+Or install directly from the repository:
+```bash
+npm install -g git+https://github.com/bjarnig/CDP.js.git
+```
+
 **Note**: This project has no external dependencies. All functionality uses Node.js built-in modules.
+
+### Usage from Any Directory
+
+Once installed globally, you can run `cdpjs` from any directory:
+
+```bash
+# Navigate to a directory with WAV files
+cd /path/to/your/audio/files
+
+# Run cdpjs from anywhere
+cdpjs 2 cycles filter
+```
+
+The tool will automatically scan the current working directory for WAV files and process them.
 
 ## Usage
 
