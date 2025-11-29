@@ -1,50 +1,47 @@
+class Radical {
+	constructor(files, channels) {
+		this.files = files;
+		this.channels = channels;
+	}
 
-var Radical = function(files, channels) {
-
-	this.files = files;
-	this.channels = channels;
-	
-	this.process = function() {
-		
+	process() {
 		console.log(' PROCESS - Radical ');
 
-		var radicala = '_reverse',
-			radicalb = '_shred',
-			radicalc = '_ringa',
-			radicald = '_degrade',
-			radicale = '_ringm',
-			radicalf = '_shredb',
-			radicalg = '_degradeb', 
-			radicalh = '_ringmb',
-		 	
-		 	self = this;
-		
-		this.files.forEach(function(file) {
+		const radicala = '_reverse';
+		const radicalb = '_shred';
+		const radicalc = '_ringa';
+		const radicald = '_degrade';
+		const radicale = '_ringm';
+		const radicalf = '_shredb';
+		const radicalg = '_degradeb';
+		const radicalh = '_ringmb';
 
-			for (var i = 1; i <= channels; i++) {
-
-				self.run('modify radical 1 ' + self.params(file, radicala, i) + self.ws );
-				self.run('modify radical 2 ' + self.params(file, radicalb, i) + ' 8 0.8 -n'); // repeats chunklen
-				self.run('modify radical 5 ' + self.params(file, radicalc, i) + self.ws + self.rrange(7, 15)); 
-				self.run('modify radical 4 ' + self.params(file, radicald, i) + ' 8 4'); // bit_resolution srate_division
-				self.run('modify radical 5 ' + self.params(file, radicale, i) + self.ws + self.rrange(60, 150)); 
-				self.run('modify radical 2 ' + self.params(file, radicalf, i) + self.ws + ' 32 0.4 -n'); // repeats chunklen
-				self.run('modify radical 4 ' + self.params(file, radicalg, i) + ' 6 4'); // bit_resolution srate_division
-				self.run('modify radical 5 ' + self.params(file, radicalh, i) + self.ws + self.rrange(500, 1500)); 
-			
+		this.files.forEach((file) => {
+			for (let i = 1; i <= this.channels; i++) {
+				this.run(`modify radical 1 ${this.params(file, radicala, i)}${this.ws}`);
+				// repeats chunklen
+				this.run(`modify radical 2 ${this.params(file, radicalb, i)} 8 0.8 -n`);
+				this.run(`modify radical 5 ${this.params(file, radicalc, i)}${this.ws}${this.rrange(7, 15)}`);
+				// bit_resolution srate_division
+				this.run(`modify radical 4 ${this.params(file, radicald, i)} 8 4`);
+				this.run(`modify radical 5 ${this.params(file, radicale, i)}${this.ws}${this.rrange(60, 150)}`);
+				// repeats chunklen
+				this.run(`modify radical 2 ${this.params(file, radicalf, i)}${this.ws}32 0.4 -n`);
+				// bit_resolution srate_division
+				this.run(`modify radical 4 ${this.params(file, radicalg, i)} 6 4`);
+				this.run(`modify radical 5 ${this.params(file, radicalh, i)}${this.ws}${this.rrange(500, 1500)}`);
 			}
 
-			self.collect(file, radicala);
-			self.collect(file, radicalb);
-			self.collect(file, radicalc);
-			self.collect(file, radicald);
-			self.collect(file, radicale);
-			self.collect(file, radicalf);
-			self.collect(file, radicalg);
-			self.collect(file, radicalh);
-
+			this.collect(file, radicala);
+			this.collect(file, radicalb);
+			this.collect(file, radicalc);
+			this.collect(file, radicald);
+			this.collect(file, radicale);
+			this.collect(file, radicalf);
+			this.collect(file, radicalg);
+			this.collect(file, radicalh);
 		});
-	};
-};
+	}
+}
 
 module.exports = Radical;

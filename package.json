@@ -1,6 +1,6 @@
 {
   "name": "cdp.js",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Run CDP batch processes with NodeJS",
   "license": "ISC",
   "repository": {
@@ -10,11 +10,8 @@
   "bin": {
     "cdpjs": "index.js"
   },
-  "dependencies": {
-    "async": "^3.1.0",
-    "execSync": "^1.0.2",
-    "prompt": "^1.0.0",
-    "rng": "^0.2.2",
-    "sync-exec": "^0.6.2"
-  }
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {}
 }

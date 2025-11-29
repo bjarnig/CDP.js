@@ -1,61 +1,57 @@
+class Pitchspec {
+	constructor(files, channels) {
+		this.files = files;
+		this.channels = channels;
+	}
 
-var Pitchspec = function(files, channels) {
-
-	this.files = files;
-	this.channels = channels;
-	
-	this.process = function() {
-		
+	process() {
 		console.log(' PROCESS - SPECPITCH ');
 
-		var specaa = '_spechorda',
-			specab = '_downshift',
-			specac = '_tune',
-			specad = '_spechordb',
-			specae = '_tuneb',
-			specaf = '_spechordc',
-		 	windowSize = 'c8192',
-		 	self = this;
-		
-		this.files.forEach(function(file) {
+		const specaa = '_spechorda';
+		const specab = '_downshift';
+		const specac = '_tune';
+		const specad = '_spechordb';
+		const specae = '_tuneb';
+		const specaf = '_spechordc';
+		const windowSize = 'c8192';
 
-			for (var i = 1; i <= channels; i++) {
-
-				self.run('pvoc anal 1 ' + self.paramsToAna(file, i) + ' -' + windowSize + ' -o3');
+		this.files.forEach((file) => {
+			for (let i = 1; i <= this.channels; i++) {
+				this.run(`pvoc anal 1 ${this.paramsToAna(file, i)} -${windowSize} -o3`);
 
 				// CHORDA
-				self.run('pitch chord ' + self.paramsAna(file, specaa, i) + ' processes/pitchspec/brk/chorda.txt -x');
-				self.run('pvoc synth ' + self.paramsToWav(file, specaa, i));
+				this.run(`pitch chord ${this.paramsAna(file, specaa, i)} processes/pitchspec/brk/chorda.txt -x`);
+				this.run(`pvoc synth ${this.paramsToWav(file, specaa, i)}`);
 
 				// DOWNSHIFT
-				self.run('pitch transp 2 ' + self.paramsAna(file, specab, i) + self.ws + self.rrange(800, 2000) + ' -d1.0');
-				self.run('pvoc synth ' + self.paramsToWav(file, specab, i));
+				this.run(`pitch transp 2 ${this.paramsAna(file, specab, i)}${this.ws}${this.rrange(800, 2000)} -d1.0`);
+				this.run(`pvoc synth ${this.paramsToWav(file, specab, i)}`);
 
 				// TUNE
-				self.run('pitch tune 2 ' + self.paramsAna(file, specac, i) + ' processes/pitchspec/brk/tune_midilista.txt -c' + self.rrange(0.0, 1.0));
-				self.run('pvoc synth ' + self.paramsToWav(file, specac, i));
+				this.run(`pitch tune 2 ${this.paramsAna(file, specac, i)} processes/pitchspec/brk/tune_midilista.txt -c${this.rrange(0.0, 1.0)}`);
+				this.run(`pvoc synth ${this.paramsToWav(file, specac, i)}`);
 
 				// CHORD B
-				self.run('pitch chord ' + self.paramsAna(file, specad, i) + ' processes/pitchspec/brk/chordb.txt -x');
-				self.run('pvoc synth ' + self.paramsToWav(file, specad, i));
+				this.run(`pitch chord ${this.paramsAna(file, specad, i)} processes/pitchspec/brk/chordb.txt -x`);
+				this.run(`pvoc synth ${this.paramsToWav(file, specad, i)}`);
 
 				// TUNE B
-				self.run('pitch tune 2 ' + self.paramsAna(file, specae, i) + ' processes/pitchspec/brk/tune_midilistb.txt -c' + self.rrange(0.0, 1.0));
-				self.run('pvoc synth ' + self.paramsToWav(file, specae, i));
+				this.run(`pitch tune 2 ${this.paramsAna(file, specae, i)} processes/pitchspec/brk/tune_midilistb.txt -c${this.rrange(0.0, 1.0)}`);
+				this.run(`pvoc synth ${this.paramsToWav(file, specae, i)}`);
 
 				// CHORD C
-				self.run('pitch chord ' + self.paramsAna(file, specaf, i) + ' processes/pitchspec/brk/chordc.txt -x');
-				self.run('pvoc synth ' + self.paramsToWav(file, specaf, i));
+				this.run(`pitch chord ${this.paramsAna(file, specaf, i)} processes/pitchspec/brk/chordc.txt -x`);
+				this.run(`pvoc synth ${this.paramsToWav(file, specaf, i)}`);
 			}
 
-			self.collectAna(file, specaa, true);
-			self.collectAna(file, specab, true);
-			self.collectAna(file, specac, true);
-			self.collectAna(file, specad, true);
-			self.collectAna(file, specae, true);
-			self.collectAna(file, specaf, true);
+			this.collectAna(file, specaa, true);
+			this.collectAna(file, specab, true);
+			this.collectAna(file, specac, true);
+			this.collectAna(file, specad, true);
+			this.collectAna(file, specae, true);
+			this.collectAna(file, specaf, true);
 		});
-	};
-};
+	}
+}
 
 module.exports = Pitchspec;

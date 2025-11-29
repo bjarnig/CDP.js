@@ -1,188 +1,205 @@
 #!/usr/bin/env node
 
-var exec = require('sync-exec');
-var Extend = require('./processes/extend/extend');
-var Cycles = require('./processes/cycles/cycles');
-var Multi = require('./processes/multi/multi');
-var Chords = require('./processes/chords/chords');
-var Filter = require('./processes/filter/filter');
-var Envel = require('./processes/envel/envel');
-var Distort = require('./processes/distort/distort');
-var Fade = require('./processes/fade/fade');
-var Granulate = require('./processes/granulate/granulate');
-var Radical = require('./processes/radical/radical');
-var Delete = require('./processes/delete/delete');
-var ZigZag = require('./processes/zigzag/zigzag');
-var Tremolo = require('./processes/tremolo/tremolo');
-var Delverb = require('./processes/delverb/delverb');
-var Transpose = require('./processes/transpose/transpose');
-var Speca = require('./processes/speca/speca');
-var Pitchspec = require('./processes/pitchspec/pitchspec.js');
+const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
-var Transform = function(channels) {
+const Extend = require('./processes/extend/extend');
+const Cycles = require('./processes/cycles/cycles');
+const Multi = require('./processes/multi/multi');
+const Chords = require('./processes/chords/chords');
+const Filter = require('./processes/filter/filter');
+const Envel = require('./processes/envel/envel');
+const Distort = require('./processes/distort/distort');
+const Fade = require('./processes/fade/fade');
+const Granulate = require('./processes/granulate/granulate');
+const Radical = require('./processes/radical/radical');
+const Delete = require('./processes/delete/delete');
+const ZigZag = require('./processes/zigzag/zigzag');
+const Tremolo = require('./processes/tremolo/tremolo');
+const Delverb = require('./processes/delverb/delverb');
+const Transpose = require('./processes/transpose/transpose');
+const Speca = require('./processes/speca/speca');
+const Pitchspec = require('./processes/pitchspec/pitchspec.js');
 
-	this.channels = channels;
-
-	this.init = function() {
-		var self = this;
-		this.files.forEach(function(file) {
-			self.run('housekeep chans 2 ' + file + self.wav);
-		});
-	};
-
-	this.cleanFiles = function() {
-		var self = this;
-		this.files.forEach(function(file) {
-			self.clean(file);
-		});
-	};
-};
-
-Transform.prototype.run = function(args, time) {
-	console.log(args);
-	var code = exec(args);
-	if(code.length > 1) { console.log(code); }
-};
-
-Transform.prototype.collect = function(file, append) {
-	this.collectAna(file, append, false);
-};
-
-Transform.prototype.collectAna = function(file, append, ana) {
-	var interleave = '', i;
-
-	for (i = 1; i <= this.channels; i++) {
-		interleave =  interleave + file + append + this.c + i + this.wav + this.ws;
+class Transform {
+	constructor(channels) {
+		this.channels = channels;
+		this.files = [];
+		this.wav = '.wav';
+		this.ana = '.ana';
+		this.ws = ' ';
+		this.c = '_c';
+		this.outputFolder = 'transformed/';
 	}
 
-	this.run('submix interleave ' + interleave + file + append + this.wav);
+	init() {
+		this.files.forEach((file) => {
+			this.run(`housekeep chans 2 ${file}${this.wav}`);
+		});
+	}
 
-	for (i = 1; i <= this.channels; i++) {
-		this.run('rm ' + file + append + this.c + i + this.wav);
+	cleanFiles() {
+		this.files.forEach((file) => {
+			this.clean(file);
+		});
+	}
 
-		if(ana) {
-			this.run('rm ' + file + append + this.c + i + this.ana);
-			this.run('rm ' + file + this.c + i + this.ana);
+	run(args) {
+		console.log(args);
+		try {
+			const output = execSync(args, { encoding: 'utf8', stdio: 'pipe' });
+			if (output && output.trim().length > 0) {
+				console.log(output);
+			}
+		} catch (error) {
+			console.error(`Error executing: ${args}`);
+			if (error.stdout) console.log(error.stdout);
+			if (error.stderr) console.error(error.stderr);
 		}
 	}
-};
 
-Transform.prototype.combine = function(file, append, files) {
-	var mergemany = '', i;
-
-	for(i = 0; i < files.length; i++) {
-		mergemany =  mergemany + file + files[i] + this.wav + this.ws;
+	collect(file, append) {
+		this.collectAna(file, append, false);
 	}
 
-	this.run('submix mergemany ' + mergemany + file + append + this.wav);
+	collectAna(file, append, ana) {
+		let interleave = '';
 
-	for(i = 0; i < files.length; i++) {
-		this.run('rm ' + file + files[i] + this.wav);
+		for (let i = 1; i <= this.channels; i++) {
+			interleave += `${file}${append}${this.c}${i}${this.wav}${this.ws}`;
+		}
+
+		this.run(`submix interleave ${interleave}${file}${append}${this.wav}`);
+
+		for (let i = 1; i <= this.channels; i++) {
+			this.run(`rm ${file}${append}${this.c}${i}${this.wav}`);
+
+			if (ana) {
+				this.run(`rm ${file}${append}${this.c}${i}${this.ana}`);
+				this.run(`rm ${file}${this.c}${i}${this.ana}`);
+			}
+		}
 	}
-};
 
-Transform.prototype.clean = function(file) {
+	combine(file, append, files) {
+		let mergemany = '';
 
-	for (var i = 1; i <= this.channels; i++) {
-		this.run('rm ' + file + this.c + i + this.wav);
+		for (let i = 0; i < files.length; i++) {
+			mergemany += `${file}${files[i]}${this.wav}${this.ws}`;
+		}
+
+		this.run(`submix mergemany ${mergemany}${file}${append}${this.wav}`);
+
+		for (let i = 0; i < files.length; i++) {
+			this.run(`rm ${file}${files[i]}${this.wav}`);
+		}
 	}
-};
 
-Transform.prototype.cleanStereo = function(file) {
-	this.run('rm ' + file + this.wav);
-};
-
-Transform.prototype.inputAna = function(file, channel) {
-	return file + channel + this.ana + this.ws;
-};
-
-Transform.prototype.input = function(file, channel) {
-	return file + channel + this.wav + this.ws;
-};
-
-Transform.prototype.output = function(file, extension, channel) {
-	return  file + extension + channel + this.wav;
-};
-
-Transform.prototype.outputAna = function(file, extension, channel) {
-	return  file + extension + channel + this.ana;
-};
-
-Transform.prototype.params = function(file, extension, channel) {
-	return this.input(file, this.c + channel) + this.output(file, extension, this.c + channel);
-};
-
-Transform.prototype.paramsSimple = function(file, extension) {
-	return file + this.wav + this.ws + file + extension + this.wav;
-};
-
-Transform.prototype.paramsAna = function(file, extension, channel) {
-	return this.inputAna(file, this.c + channel) + this.outputAna(file, extension, this.c + channel);
-};
-
-Transform.prototype.paramsToAna = function(file, channel) {
-	return this.input(file, this.c + channel) + this.outputAna(file, '', this.c + channel);
-};
-
-Transform.prototype.paramsToWav = function(file, extension, channel) {
-	return this.inputAna(file + extension, this.c + channel) + this.output(file, extension, this.c + channel);
-};
-
-Transform.prototype.rrange = function(hi, low) {
-	return (Math.random() * (hi - low) + low).toFixed(2);
-};
-
-Transform.prototype.readFiles = function() {
-	var fs = require('fs'),
-		path = require('path'),
-		files = fs.readdirSync(__dirname);
-
-	console.log(JSON.stringify(files));
-
-   	this.files = [];
-
-	for(var i in files) {
-	    if(path.extname(files[i]) === this.wav && path.basename(files[i]).slice(0,2) !== '._') {
-	    	this.files.push(path.basename(files[i], this.wav));
-	    }
+	clean(file) {
+		for (let i = 1; i <= this.channels; i++) {
+			this.run(`rm ${file}${this.c}${i}${this.wav}`);
+		}
 	}
-};
 
-/* Variables */
+	cleanStereo(file) {
+		this.run(`rm ${file}${this.wav}`);
+	}
 
-Transform.prototype.wav = '.wav';
-Transform.prototype.ana = '.ana';
-Transform.prototype.ws = ' ';
-Transform.prototype.c = '_c';
-Transform.prototype.outputFolder = 'transformed/';
+	inputAna(file, channel) {
+		return `${file}${channel}${this.ana}${this.ws}`;
+	}
 
-/* Process */
+	input(file, channel) {
+		return `${file}${channel}${this.wav}${this.ws}`;
+	}
 
-var inputChannels = 2,
-    inputChannels = process.argv[2];
+	output(file, extension, channel) {
+		return `${file}${extension}${channel}${this.wav}`;
+	}
+
+	outputAna(file, extension, channel) {
+		return `${file}${extension}${channel}${this.ana}`;
+	}
+
+	params(file, extension, channel) {
+		return `${this.input(file, this.c + channel)}${this.output(file, extension, this.c + channel)}`;
+	}
+
+	paramsSimple(file, extension) {
+		return `${file}${this.wav}${this.ws}${file}${extension}${this.wav}`;
+	}
+
+	paramsAna(file, extension, channel) {
+		return `${this.inputAna(file, this.c + channel)}${this.outputAna(file, extension, this.c + channel)}`;
+	}
+
+	paramsToAna(file, channel) {
+		return `${this.input(file, this.c + channel)}${this.outputAna(file, '', this.c + channel)}`;
+	}
+
+	paramsToWav(file, extension, channel) {
+		return `${this.inputAna(file + extension, this.c + channel)}${this.output(file, extension, this.c + channel)}`;
+	}
+
+	rrange(hi, low) {
+		return (Math.random() * (hi - low) + low).toFixed(2);
+	}
+
+	readFiles() {
+		const files = fs.readdirSync(__dirname);
+
+		console.log(JSON.stringify(files));
+
+		this.files = [];
+
+		for (const file of files) {
+			if (path.extname(file) === this.wav && path.basename(file).slice(0, 2) !== '._') {
+				this.files.push(path.basename(file, this.wav));
+			}
+		}
+	}
+}
+
+// Get input channels from command line arguments
+const inputChannels = process.argv[2] || '2';
 
 console.log('  -  CDP  - ');
-console.log('Number of channels : ' + inputChannels);
+console.log(`Number of channels : ${inputChannels}`);
 
-Extend.prototype = new Transform(inputChannels);
-Cycles.prototype = new Transform(inputChannels);
-Chords.prototype = new Transform(inputChannels);
-Multi.prototype = new Transform(inputChannels);
-Filter.prototype = new Transform(inputChannels);
-Envel.prototype = new Transform(inputChannels);
-Distort.prototype = new Transform(inputChannels);
-Fade.prototype = new Transform(inputChannels);
-Granulate.prototype = new Transform(inputChannels);
-Radical.prototype = new Transform(inputChannels);
-Delete.prototype = new Transform(inputChannels);
-ZigZag.prototype = new Transform(inputChannels);
-Tremolo.prototype = new Transform(inputChannels);
-Delverb.prototype = new Transform(inputChannels);
-Transpose.prototype = new Transform(inputChannels);
-Speca.prototype = new Transform(inputChannels);
-Pitchspec.prototype = new Transform(inputChannels);
+// Initialize transform instance
+const transform = new Transform(inputChannels);
 
-var transform = new Transform(inputChannels);
+// Set up process prototypes
+Extend.prototype = Object.create(Transform.prototype);
+Cycles.prototype = Object.create(Transform.prototype);
+Chords.prototype = Object.create(Transform.prototype);
+Multi.prototype = Object.create(Transform.prototype);
+Filter.prototype = Object.create(Transform.prototype);
+Envel.prototype = Object.create(Transform.prototype);
+Distort.prototype = Object.create(Transform.prototype);
+Fade.prototype = Object.create(Transform.prototype);
+Granulate.prototype = Object.create(Transform.prototype);
+Radical.prototype = Object.create(Transform.prototype);
+Delete.prototype = Object.create(Transform.prototype);
+ZigZag.prototype = Object.create(Transform.prototype);
+Tremolo.prototype = Object.create(Transform.prototype);
+Delverb.prototype = Object.create(Transform.prototype);
+Transpose.prototype = Object.create(Transform.prototype);
+Speca.prototype = Object.create(Transform.prototype);
+Pitchspec.prototype = Object.create(Transform.prototype);
+
+// Initialize transform methods on all process prototypes
+const processClasses = [
+	Extend, Cycles, Chords, Multi, Filter, Envel, Distort, Fade,
+	Granulate, Radical, Delete, ZigZag, Tremolo, Delverb, Transpose, Speca, Pitchspec
+];
+
+processClasses.forEach((ProcessClass) => {
+	const instance = new ProcessClass([], inputChannels);
+	Object.setPrototypeOf(instance, Transform.prototype);
+	Object.setPrototypeOf(ProcessClass.prototype, Transform.prototype);
+});
 
 transform.readFiles();
 transform.init();
@@ -190,97 +207,117 @@ transform.init();
 console.log('## CDP processing begins, processing:');
 console.log(JSON.stringify(transform.files));
 
-for (var i = 3; i < process.argv.length; i++) {
+// Process command line arguments
+for (let i = 3; i < process.argv.length; i++) {
+	const processName = process.argv[i];
 
-	switch(process.argv[i]) {
+	switch (processName) {
+		case 'cycles': {
+			const cycles = new Cycles(transform.files, inputChannels);
+			cycles.process();
+			break;
+		}
 
-		case 'cycles':
-		cycles = new Cycles(transform.files, inputChannels);
-		cycles.process();
-		break;
+		case 'extend': {
+			const extend = new Extend(transform.files, inputChannels);
+			extend.process();
+			break;
+		}
 
-		case 'extend':
-		extend = new Extend(transform.files, inputChannels);
-		extend.process();
-		break;
+		case 'chords': {
+			const chords = new Chords(transform.files, inputChannels);
+			chords.process();
+			break;
+		}
 
-		case 'chords':
-		chords = new Chords(transform.files, inputChannels);
-		chords.process();
-		break;
+		case 'multi': {
+			const multi = new Multi(transform.files, inputChannels);
+			multi.process();
+			break;
+		}
 
-		case 'multi':
-		multi = new Multi(transform.files, inputChannels);
-		multi.process();
-		break;
+		case 'filter': {
+			const filter = new Filter(transform.files, inputChannels);
+			filter.process();
+			break;
+		}
 
-		case 'filter':
-		filter = new Filter(transform.files, inputChannels);
-		filter.process();
-		break;
+		case 'envel': {
+			const envel = new Envel(transform.files, inputChannels);
+			envel.process();
+			break;
+		}
 
-		case 'envel':
-		envel = new Envel(transform.files, inputChannels);
-		envel.process();
-		break;
+		case 'distort': {
+			const distort = new Distort(transform.files, inputChannels);
+			distort.process();
+			break;
+		}
 
-		case 'distort':
-		distort = new Distort(transform.files, inputChannels);
-		distort.process();
-		break;
+		case 'fade': {
+			const fade = new Fade(transform.files, inputChannels);
+			fade.process();
+			break;
+		}
 
-		case 'fade':
-		fade = new Fade(transform.files, inputChannels);
-		fade.process();
-		break;
+		case 'granulate': {
+			const granulate = new Granulate(transform.files, inputChannels);
+			granulate.process();
+			break;
+		}
 
-		case 'granulate':
-		granulate = new Granulate(transform.files, inputChannels);
-		granulate.process();
-		break;
+		case 'radical': {
+			const radical = new Radical(transform.files, inputChannels);
+			radical.process();
+			break;
+		}
 
-		case 'radical':
-		radical = new Radical(transform.files, inputChannels);
-		radical.process();
-		break;
+		case 'delete': {
+			const del = new Delete(transform.files, inputChannels);
+			del.process();
+			break;
+		}
 
-		case 'delete':
-		del = new Delete(transform.files, inputChannels);
-		del.process();
-		break;
+		case 'tremolo': {
+			const tremolo = new Tremolo(transform.files, inputChannels);
+			tremolo.process();
+			break;
+		}
 
-		case 'tremolo':
-		tremolo = new Tremolo(transform.files, inputChannels);
-		tremolo.process();
-		break;
+		case 'zigzag': {
+			const zigzag = new ZigZag(transform.files, inputChannels);
+			zigzag.process();
+			break;
+		}
 
-		case 'zigzag':
-		zigzag = new ZigZag(transform.files, inputChannels);
-		zigzag.process();
-		break;
+		case 'delverb': {
+			const delverb = new Delverb(transform.files, inputChannels);
+			delverb.process();
+			break;
+		}
 
-		case 'delverb':
-		delverb = new Delverb(transform.files, inputChannels);
-		delverb.process();
-		break;
+		case 'transpose': {
+			const transpose = new Transpose(transform.files, inputChannels);
+			transpose.process();
+			break;
+		}
 
-		case 'transpose':
-		transpose = new Transpose(transform.files, inputChannels);
-		transpose.process();
-		break;
+		case 'speca': {
+			const speca = new Speca(transform.files, inputChannels);
+			speca.process();
+			break;
+		}
 
-		case 'speca':
-		speca = new Speca(transform.files, inputChannels);
-		speca.process();
-		break;
+		case 'pitchspec': {
+			const pitchspec = new Pitchspec(transform.files, inputChannels);
+			pitchspec.process();
+			break;
+		}
 
-		case 'pitchspec':
-		pitchspec = new Pitchspec(transform.files, inputChannels);
-		pitchspec.process();
-		break;
+		default:
+			console.warn(`Unknown process: ${processName}`);
 	}
 }
 
-/* Terminate  */
-
+// Clean up temporary files
 transform.cleanFiles();
