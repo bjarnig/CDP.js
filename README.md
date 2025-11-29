@@ -1,70 +1,47 @@
 # CDP.js
 
-A modern Node.js command-line tool for batch processing audio files using CDP (Composer's Desktop Project) transformations. This tool allows you to apply various audio effects and transformations to multiple WAV files simultaneously from the terminal.
-
-> **Quick Start**: See [QUICKSTART.md](QUICKSTART.md) for a fast setup guide!
+Node.js command-line tool for batch processing audio files using CDP (Composer's Desktop Project) transformations. Applies audio effects and transformations to multiple WAV files simultaneously.
 
 ## Features
 
-- **Batch Processing**: Process multiple audio files at once
-- **Multi-channel Support**: Handle stereo and multi-channel audio files
-- **16 Audio Processes**: Wide variety of audio transformations including filtering, distortion, modulation, granular synthesis, and more
-- **Command-line Interface**: Easy-to-use terminal interface
-- **Randomized Parameters**: Each process uses randomized parameters for unique results
-- **Modern JavaScript**: Built with ES6+ features (classes, arrow functions, const/let)
-- **Zero Dependencies**: Uses only Node.js built-in modules
+- Batch processing of multiple audio files
+- Multi-channel audio support
+- 17 audio processing modules (filtering, distortion, modulation, granular synthesis, spectral processing)
+- Randomized parameters for each process
+- Zero dependencies (Node.js built-in modules only)
+- ES6+ JavaScript implementation
 
 ## Requirements
 
-- **Node.js**: Version 14.0.0 or higher
-- **CDP (Composer's Desktop Project)**: Must be installed and accessible from command line
-  - CDP commands (`housekeep`, `distort`, `submix`, etc.) must be in your system PATH
-  - Test by running: `which housekeep` or `housekeep --help` (should not return "command not found")
-  - If CDP is not in PATH, you may need to add the CDP installation directory to your PATH environment variable
-- **WAV Audio Files**: Place your `.wav` files in the directory where you run the command
+- Node.js 14.0.0 or higher
+- CDP (Composer's Desktop Project) installed and accessible via PATH
+  - Verify installation: `which housekeep` or `housekeep --help`
+  - CDP commands (`housekeep`, `distort`, `submix`, etc.) must be in system PATH
+- WAV audio files in the working directory
 
 ## Installation
 
 ### Local Development
 
-1. Clone the repository:
 ```bash
 git clone https://github.com/bjarnig/CDP.js.git
 cd CDP.js
-```
-
-2. Install globally to use the `cdpjs` command from anywhere:
-```bash
 npm link
 ```
 
 ### Global Installation
 
-To install globally from npm (when published):
 ```bash
 npm install -g cdp.js
 ```
 
-Or install directly from the repository:
+Or from repository:
+
 ```bash
 npm install -g git+https://github.com/bjarnig/CDP.js.git
 ```
 
-**Note**: This project has no external dependencies. All functionality uses Node.js built-in modules.
-
-### Usage from Any Directory
-
-Once installed globally, you can run `cdpjs` from any directory:
-
-```bash
-# Navigate to a directory with WAV files
-cd /path/to/your/audio/files
-
-# Run cdpjs from anywhere
-cdpjs 2 cycles filter
-```
-
-The tool will automatically scan the current working directory for WAV files and process them.
+Once installed globally, `cdpjs` can be run from any directory.
 
 ## Usage
 
@@ -72,71 +49,55 @@ The tool will automatically scan the current working directory for WAV files and
 cdpjs <channels> <process1> [process2] [process3] ...
 ```
 
-### Parameters
+**Parameters:**
+- `channels`: Number of audio channels (1=mono, 2=stereo, etc.)
+- `process1`, `process2`, etc.: One or more audio processing modules
 
-- `channels`: Number of audio channels (e.g., `1` for mono, `2` for stereo)
-- `process1`, `process2`, etc.: One or more audio processing modules to apply
+**Examples:**
 
-### Available Processes
-
-The tool provides 16 different audio processing modules:
-
-1. **cycles** - Applies various cyclic transformations (omit, reform, multiply, divide, delete, fractal, telescope)
-2. **chords** - Creates chordal variations using speed modifications
-3. **multi** - Multi-layered processing with interpolation, pitch, filtering, and more
-4. **filter** - Various filtering effects (low-pass, high-pass, band-pass, notch, variable filters)
-5. **envel** - Envelope processing with different envelope shapes
-6. **distort** - Distortion effects (average, repeat, fractal, overload, interpolate, omit, replim, replace)
-7. **fade** - Fade in/out effects with multiple fade curves
-8. **granulate** - Granular synthesis with various grain parameters
-9. **radical** - Radical audio transformations (reverse, shred, ring modulation, degradation)
-10. **delete** - Deletion-based processing using breakpoint files
-11. **tremolo** - Tremolo effects with various modulation patterns
-12. **zigzag** - Zigzag modulation effects
-13. **delverb** - Delay and reverb effects using impulse responses
-14. **transpose** - Pitch transposition (octaves, fifths, sevenths)
-15. **speca** - Spectral analysis and processing (stretch, blur, shuffle, spread)
-16. **pitchspec** - Pitch-specific spectral processing with chord and tuning operations
-17. **extend** - Time extension effects (loop, zigzag, back-to-back, drunk walk, scramble)
-
-### Examples
-
-Process stereo files with cycles and filter effects:
 ```bash
 cdpjs 2 cycles filter
-```
-
-Process mono files with chords and tremolo:
-```bash
 cdpjs 1 chords tremolo
-```
-
-Apply multiple effects in sequence:
-```bash
 cdpjs 2 cycles filter distort fade
-```
-
-Create complex transformations:
-```bash
 cdpjs 2 extend granulate speca pitchspec
 ```
 
+## Available Processes
+
+1. **cycles** - Cyclic transformations (omit, reform, multiply, divide, delete, fractal, telescope)
+2. **chords** - Chordal variations via speed modifications
+3. **multi** - Multi-layered processing (interpolation, pitch, filtering)
+4. **filter** - Filtering effects (low-pass, high-pass, band-pass, notch, variable)
+5. **envel** - Envelope processing with various envelope shapes
+6. **distort** - Distortion effects (average, repeat, fractal, overload, interpolate, omit, replim, replace)
+7. **fade** - Fade in/out effects with multiple fade curves
+8. **granulate** - Granular synthesis with configurable grain parameters
+9. **radical** - Radical transformations (reverse, shred, ring modulation, degradation)
+10. **delete** - Deletion-based processing using breakpoint files
+11. **tremolo** - Tremolo effects with various modulation patterns
+12. **zigzag** - Zigzag modulation effects
+13. **delverb** - Delay and reverb using impulse responses
+14. **transpose** - Pitch transposition (octaves, fifths, sevenths)
+15. **speca** - Spectral analysis and processing (stretch, blur, shuffle, spread)
+16. **pitchspec** - Pitch-specific spectral processing (chord and tuning operations)
+17. **extend** - Time extension effects (loop, zigzag, back-to-back, drunk walk, scramble)
+
 ## How It Works
 
-1. The tool scans the current directory for WAV files (ignoring files starting with `._`)
-2. Splits multi-channel files into separate channel files using CDP's `housekeep chans` command
-3. Applies the specified processing modules to each channel independently
-4. Each process generates multiple variations with randomized parameters
-5. Combines the processed channels back into the original format using `submix interleave`
-6. Cleans up temporary channel files automatically
+1. Scans current directory for WAV files (excludes files starting with `._`)
+2. Splits multi-channel files into separate channel files via `housekeep chans`
+3. Applies processing modules to each channel independently
+4. Generates multiple variations with randomized parameters per process
+5. Combines processed channels using `submix interleave`
+6. Removes temporary channel files automatically
 
 ## File Structure
 
 ```
 CDP.js/
-├── index.js              # Main application entry point
+├── index.js              # Main entry point
 ├── package.json          # Project configuration
-├── processes/            # Directory containing all audio processing modules
+├── processes/            # Audio processing modules
 │   ├── cycles/
 │   ├── chords/
 │   ├── multi/
@@ -157,52 +118,43 @@ CDP.js/
 └── README.md
 ```
 
-Each process module:
-- Contains the specific CDP commands and parameters for that effect
-- Uses randomized parameters within defined ranges for unique results
-- May include breakpoint files (`.brk`, `.txt`) for envelope and timing control
-- May include impulse response files (`.wav`) for convolution-based effects
+Process modules contain CDP commands with randomized parameters. Some include breakpoint files (`.brk`, `.txt`) for envelope/timing control or impulse response files (`.wav`) for convolution-based effects.
 
 ## Technical Details
 
-### Modern JavaScript Features
+**Implementation:**
+- ES6 classes for all process modules
+- Arrow functions and template literals
+- `const`/`let` declarations (no `var`)
+- Node.js `child_process.execSync` for command execution
 
-This project has been modernized to use:
-- **ES6 Classes**: All process modules use class syntax instead of function constructors
-- **Arrow Functions**: Used throughout for cleaner, more concise code
-- **const/let**: Replaced all `var` declarations with `const` and `let`
-- **Template Literals**: Used for string interpolation
-- **Built-in Modules**: Uses Node.js `child_process.execSync` instead of deprecated packages
-
-### Error Handling
-
-The tool includes error handling for CDP command execution:
-- Errors are logged to the console
-- Processing continues even if individual commands fail
-- Both stdout and stderr are captured and displayed
+**Error Handling:**
+- Errors logged to console
+- Processing continues on individual command failures
+- Both stdout and stderr captured and displayed
 
 ## Output Files
 
-Processed files are saved in the same directory with descriptive suffixes:
+Processed files are saved in the working directory with descriptive suffixes:
 - Original: `sound.wav`
-- After cycles process: `sound_omit.wav`, `sound_reform.wav`, etc.
-- After filter process: `sound_lopa.wav`, `sound_hipa.wav`, etc.
+- After cycles: `sound_omit.wav`, `sound_reform.wav`, etc.
+- After filter: `sound_lopa.wav`, `sound_hipa.wav`, etc.
 
 Each process generates multiple output files with different parameter variations.
 
 ## Troubleshooting
 
-**CDP commands not found**: Ensure CDP is installed and available in your system PATH.
+**CDP commands not found**: Verify CDP installation and PATH configuration.
 
-**No WAV files found**: Make sure your `.wav` files are in the same directory where you run the command.
+**No WAV files found**: Ensure `.wav` files are in the working directory.
 
-**Permission errors**: Ensure you have write permissions in the directory containing your audio files.
+**Permission errors**: Verify write permissions in the audio file directory.
 
-**Processing errors**: Check that your WAV files are valid and that CDP can process them. Some processes may require specific file formats or sample rates.
+**Processing errors**: Validate WAV file format and sample rate compatibility with CDP.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions welcome. Submit a Pull Request.
 
 ## License
 
@@ -210,4 +162,4 @@ ISC
 
 ## Acknowledgments
 
-This tool is built to work with CDP (Composer's Desktop Project), a powerful suite of audio processing tools. For more information about CDP, visit the official CDP documentation.
+Built for CDP (Composer's Desktop Project). See official CDP documentation for more information.
