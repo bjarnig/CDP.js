@@ -1,43 +1,40 @@
+class Transpose {
+	constructor(files, channels) {
+		this.files = files;
+		this.channels = channels;
+	}
 
-var Transpose = function(files, channels) {
-
-	this.files = files;
-	this.channels = channels;
-	
-	this.process = function() {
-		
+	process() {
 		console.log(' PROCESS - TRANSPOSE ');
 
-		var transposea = '_octdown',
-			transposeb = '_twooctdown',
-			transposec = '_octup',
-			transposed = '_fifth',
-			transposee = '_fifthdown',
-			transposef = '_seventh',
-			transposeg = '_seventhdown'
-		 	self = this;
-		
-		this.files.forEach(function(file) {
+		const transposea = '_octdown';
+		const transposeb = '_twooctdown';
+		const transposec = '_octup';
+		const transposed = '_fifth';
+		const transposee = '_fifthdown';
+		const transposef = '_seventh';
+		const transposeg = '_seventhdown';
 
-			for (var i = 1; i <= channels; i++) {
-				self.run('modify speed 2 ' + self.params(file, transposea, i) + ' -12');
-				self.run('modify speed 2 ' + self.params(file, transposeb, i) + ' -24');
-				self.run('modify speed 2 ' + self.params(file, transposec, i) + ' 12');
-				self.run('modify speed 2 ' + self.params(file, transposed, i) + ' 5');
-				self.run('modify speed 2 ' + self.params(file, transposee, i) + ' -5');
-				self.run('modify speed 2 ' + self.params(file, transposef, i) + ' 7');
-				self.run('modify speed 2 ' + self.params(file, transposeg, i) + ' -7');
+		this.files.forEach((file) => {
+			for (let i = 1; i <= this.channels; i++) {
+				this.run(`modify speed 2 ${this.params(file, transposea, i)} -12`);
+				this.run(`modify speed 2 ${this.params(file, transposeb, i)} -24`);
+				this.run(`modify speed 2 ${this.params(file, transposec, i)} 12`);
+				this.run(`modify speed 2 ${this.params(file, transposed, i)} 5`);
+				this.run(`modify speed 2 ${this.params(file, transposee, i)} -5`);
+				this.run(`modify speed 2 ${this.params(file, transposef, i)} 7`);
+				this.run(`modify speed 2 ${this.params(file, transposeg, i)} -7`);
 			}
 
-			self.collect(file, transposea);
-			self.collect(file, transposeb);
-			self.collect(file, transposec);
-			self.collect(file, transposed);
-			self.collect(file, transposee);
-			self.collect(file, transposef);
-			self.collect(file, transposeg);
+			this.collect(file, transposea);
+			this.collect(file, transposeb);
+			this.collect(file, transposec);
+			this.collect(file, transposed);
+			this.collect(file, transposee);
+			this.collect(file, transposef);
+			this.collect(file, transposeg);
 		});
-	};
-};
+	}
+}
 
 module.exports = Transpose;

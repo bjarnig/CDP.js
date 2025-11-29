@@ -1,49 +1,43 @@
+class Tremolo {
+	constructor(files, channels) {
+		this.files = files;
+		this.channels = channels;
+	}
 
-var Tremolo = function(files, channels) {
-
-	this.files = files;
-	this.channels = channels;
-	
-	this.process = function() {
-		
+	process() {
 		console.log(' PROCESS - TREMOLO ');
 
-		var tremoloa = '_tremoloa',
-			tremolob = '_tremolob',
-			tremoloc = '_tremoloc',
-			tremolod = '_tremolod',
-			tremoloe = '_tremoloe',
-			tremolof = '_tremolof',
-			tremolog = '_tremolog',
-			tremoloh = '_tremoloh',
-		 	
-		 	self = this;
-		
-		this.files.forEach(function(file) {
+		const tremoloa = '_tremoloa';
+		const tremolob = '_tremolob';
+		const tremoloc = '_tremoloc';
+		const tremolod = '_tremolod';
+		const tremoloe = '_tremoloe';
+		const tremolof = '_tremolof';
+		const tremolog = '_tremolog';
+		const tremoloh = '_tremoloh';
 
-			for (var i = 1; i <= channels; i++) {
-				self.run('envel tremolo 1 ' + self.params(file, tremoloa, i) + ' processes/tremolo/brk/trema.txt ' + self.rrange(0.4, 0.8) + ' 1.000000');
-				self.run('envel tremolo 1 ' + self.params(file, tremolob, i) + ' processes/tremolo/brk/tremb.txt ' + self.rrange(0.8, 0.99) + '  1.000000');
-				self.run('envel tremolo 1 ' + self.params(file, tremoloc, i) + ' processes/tremolo/brk/tremc.txt ' + self.rrange(0.5, 0.95) + '  1.000000');
-				self.run('envel tremolo 1 ' + self.params(file, tremolod, i) + ' processes/tremolo/brk/tremd.txt ' + self.rrange(0.85, 0.95) + '  1.000000');
-				self.run('envel tremolo 1 ' + self.params(file, tremoloe, i) + ' processes/tremolo/brk/treme.txt ' + self.rrange(0.4, 0.8) + '  1.000000');
-				self.run('envel tremolo 1 ' + self.params(file, tremolof, i) + ' processes/tremolo/brk/tremf.txt ' + self.rrange(0.5, 0.7) + '  1.000000');
-				self.run('envel tremolo 1 ' + self.params(file, tremolog, i) + ' processes/tremolo/brk/tremg.txt ' + self.rrange(0.6, 0.9) + '  1.000000');
-				self.run('envel tremolo 1 ' + self.params(file, tremoloh, i) + ' processes/tremolo/brk/tremh.txt ' + self.rrange(0.3, 0.5) + '  1.000000');
-				
+		this.files.forEach((file) => {
+			for (let i = 1; i <= this.channels; i++) {
+				this.run(`envel tremolo 1 ${this.params(file, tremoloa, i)} processes/tremolo/brk/trema.txt ${this.rrange(0.4, 0.8)} 1.000000`);
+				this.run(`envel tremolo 1 ${this.params(file, tremolob, i)} processes/tremolo/brk/tremb.txt ${this.rrange(0.8, 0.99)}  1.000000`);
+				this.run(`envel tremolo 1 ${this.params(file, tremoloc, i)} processes/tremolo/brk/tremc.txt ${this.rrange(0.5, 0.95)}  1.000000`);
+				this.run(`envel tremolo 1 ${this.params(file, tremolod, i)} processes/tremolo/brk/tremd.txt ${this.rrange(0.85, 0.95)}  1.000000`);
+				this.run(`envel tremolo 1 ${this.params(file, tremoloe, i)} processes/tremolo/brk/treme.txt ${this.rrange(0.4, 0.8)}  1.000000`);
+				this.run(`envel tremolo 1 ${this.params(file, tremolof, i)} processes/tremolo/brk/tremf.txt ${this.rrange(0.5, 0.7)}  1.000000`);
+				this.run(`envel tremolo 1 ${this.params(file, tremolog, i)} processes/tremolo/brk/tremg.txt ${this.rrange(0.6, 0.9)}  1.000000`);
+				this.run(`envel tremolo 1 ${this.params(file, tremoloh, i)} processes/tremolo/brk/tremh.txt ${this.rrange(0.3, 0.5)}  1.000000`);
 			}
 
-			self.collect(file, tremoloa);
-			self.collect(file, tremolob);
-			self.collect(file, tremoloc);
-			self.collect(file, tremolod);
-			self.collect(file, tremoloe);
-			self.collect(file, tremolof);
-			self.collect(file, tremolog);
-			self.collect(file, tremoloh);
-
+			this.collect(file, tremoloa);
+			this.collect(file, tremolob);
+			this.collect(file, tremoloc);
+			this.collect(file, tremolod);
+			this.collect(file, tremoloe);
+			this.collect(file, tremolof);
+			this.collect(file, tremolog);
+			this.collect(file, tremoloh);
 		});
-	};
-};
+	}
+}
 
 module.exports = Tremolo;
