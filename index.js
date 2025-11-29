@@ -297,115 +297,115 @@ for (let i = 3; i < process.argv.length; i++) {
 
 	switch (processName) {
 		case 'cycles': {
-			const cycles = initializeProcess(new Cycles(transform.files, inputChannels), inputChannels);
+			const cycles = initializeProcess(new Cycles(transform.files, transform.channels), transform.channels);
 			cycles.process();
 			break;
 		}
 
 		case 'extend': {
-			const extend = initializeProcess(new Extend(transform.files, inputChannels), inputChannels);
+			const extend = initializeProcess(new Extend(transform.files, transform.channels), transform.channels);
 			extend.process();
 			break;
 		}
 
 		case 'chords': {
-			const chords = initializeProcess(new Chords(transform.files, inputChannels), inputChannels);
+			const chords = initializeProcess(new Chords(transform.files, transform.channels), transform.channels);
 			chords.process();
 			break;
 		}
 
 		case 'multi': {
-			const multi = initializeProcess(new Multi(transform.files, inputChannels), inputChannels);
+			const multi = initializeProcess(new Multi(transform.files, transform.channels), transform.channels);
 			multi.process();
 			break;
 		}
 
 		case 'filter': {
-			const filter = initializeProcess(new Filter(transform.files, inputChannels), inputChannels);
+			const filter = initializeProcess(new Filter(transform.files, transform.channels), transform.channels);
 			filter.process();
 			break;
 		}
 
 		case 'envel': {
-			const envel = initializeProcess(new Envel(transform.files, inputChannels), inputChannels);
+			const envel = initializeProcess(new Envel(transform.files, transform.channels), transform.channels);
 			envel.process();
 			break;
 		}
 
 		case 'distort': {
-			const distort = initializeProcess(new Distort(transform.files, inputChannels), inputChannels);
+			const distort = initializeProcess(new Distort(transform.files, transform.channels), transform.channels);
 			distort.process();
 			break;
 		}
 
 		case 'fade': {
-			const fade = initializeProcess(new Fade(transform.files, inputChannels), inputChannels);
+			const fade = initializeProcess(new Fade(transform.files, transform.channels), transform.channels);
 			fade.process();
 			break;
 		}
 
 		case 'granulate': {
-			const granulate = initializeProcess(new Granulate(transform.files, inputChannels), inputChannels);
+			const granulate = initializeProcess(new Granulate(transform.files, transform.channels), transform.channels);
 			granulate.process();
 			break;
 		}
 
 		case 'radical': {
-			const radical = initializeProcess(new Radical(transform.files, inputChannels), inputChannels);
+			const radical = initializeProcess(new Radical(transform.files, transform.channels), transform.channels);
 			radical.process();
 			break;
 		}
 
 		case 'delete': {
-			const del = initializeProcess(new Delete(transform.files, inputChannels), inputChannels);
+			const del = initializeProcess(new Delete(transform.files, transform.channels), transform.channels);
 			del.process();
 			break;
 		}
 
 		case 'tremolo': {
-			const tremolo = initializeProcess(new Tremolo(transform.files, inputChannels), inputChannels);
+			const tremolo = initializeProcess(new Tremolo(transform.files, transform.channels), transform.channels);
 			tremolo.process();
 			break;
 		}
 
 		case 'zigzag': {
-			const zigzag = initializeProcess(new ZigZag(transform.files, inputChannels), inputChannels);
+			const zigzag = initializeProcess(new ZigZag(transform.files, transform.channels), transform.channels);
 			zigzag.process();
 			break;
 		}
 
 		case 'delverb': {
-			const delverb = initializeProcess(new Delverb(transform.files, inputChannels), inputChannels);
+			const delverb = initializeProcess(new Delverb(transform.files, transform.channels), transform.channels);
 			delverb.process();
 			break;
 		}
 
 		case 'transpose': {
-			const transpose = initializeProcess(new Transpose(transform.files, inputChannels), inputChannels);
+			const transpose = initializeProcess(new Transpose(transform.files, transform.channels), transform.channels);
 			transpose.process();
 			break;
 		}
 
 		case 'speca': {
-			const speca = initializeProcess(new Speca(transform.files, inputChannels), inputChannels);
+			const speca = initializeProcess(new Speca(transform.files, transform.channels), transform.channels);
 			speca.process();
 			break;
 		}
 
 		case 'pitchspec': {
-			const pitchspec = initializeProcess(new Pitchspec(transform.files, inputChannels), inputChannels);
+			const pitchspec = initializeProcess(new Pitchspec(transform.files, transform.channels), transform.channels);
 			pitchspec.process();
 			break;
 		}
 
 		case 'distort_extended': {
-			const distortExtended = initializeProcess(new DistortExtended(transform.files, inputChannels), inputChannels);
+			const distortExtended = initializeProcess(new DistortExtended(transform.files, transform.channels), transform.channels);
 			distortExtended.process();
 			break;
 		}
 
 		case 'distmore': {
-			const distmore = initializeProcess(new Distmore(transform.files, inputChannels), inputChannels);
+			const distmore = initializeProcess(new Distmore(transform.files, transform.channels), transform.channels);
 			distmore.process();
 			break;
 		}
