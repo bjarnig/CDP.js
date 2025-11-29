@@ -1,6 +1,6 @@
 # CDP.js
 
-Node.js command-line tool for batch processing audio files using CDP (Composer's Desktop Project) transformations. Applies audio effects and transformations to multiple WAV files simultaneously.
+Node.js command-line tool for batch processing audio files using CDP (Composer's Desktop Project) transformations. Applies audio effects and transformations to multiple sound files simultaneously.
 
 ## Features
 
@@ -82,7 +82,7 @@ cdpjs 2 extend granulate speca pitchspec
 16. **pitchspec** - Pitch-specific spectral processing (chord and tuning operations)
 17. **extend** - Time extension effects (loop, zigzag, back-to-back, drunk walk, scramble)
 
-## How It Works
+## Example
 
 1. Scans current directory for WAV files (excludes files starting with `._`)
 2. Splits multi-channel files into separate channel files via `housekeep chans`
@@ -141,25 +141,3 @@ Processed files are saved in the working directory with descriptive suffixes:
 - After filter: `sound_lopa.wav`, `sound_hipa.wav`, etc.
 
 Each process generates multiple output files with different parameter variations.
-
-## Troubleshooting
-
-**CDP commands not found**: Verify CDP installation and PATH configuration.
-
-**No WAV files found**: Ensure `.wav` files are in the working directory.
-
-**Permission errors**: Verify write permissions in the audio file directory.
-
-**Processing errors**: Validate WAV file format and sample rate compatibility with CDP.
-
-## Contributing
-
-Contributions welcome. Submit a Pull Request.
-
-## License
-
-ISC
-
-## Acknowledgments
-
-Built for CDP (Composer's Desktop Project). See official CDP documentation for more information.
